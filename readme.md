@@ -58,9 +58,11 @@ docker-compose up -d
 This will start a PostgreSQL container on port **5433**.
 
 ### 3. Run Backend API
-In the same root directory, run the Spring Boot application:
+Open a terminal, navigate to the `banking-backend` directory, and run:
 
 ```bash
+cd banking-backend
+
 # MacOS / Linux
 ./mvnw spring-boot:run
 

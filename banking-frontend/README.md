@@ -1,73 +1,97 @@
-# React + TypeScript + Vite
+# 🏦 Banking App - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the **Frontend** application for the Banking App, built with **React**, **TypeScript**, and **Vite**. It provides a modern, responsive user interface for users to manage their bank accounts, perform transfers, and view transaction history.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Authentication:** Secure Login & Registration pages.
+*   **Dashboard:** Overview of user accounts and balances.
+*   **Account Management:**
+    *   Create new accounts.
+    *   Edit account details.
+    *   Delete accounts.
+    *   Search/Filter accounts.
+*   **Transactions:**
+    *   Money Transfer between accounts.
+    *   Detailed Transaction History (per account and global).
+*   **UI/UX:**
+    *   Responsive design with **Tailwind CSS**.
+    *   Modern components using **Shadcn UI**.
+    *   Form validation with **React Hook Form** & **Zod**.
+    *   Toast notifications for user feedback.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **Framework:** [React](https://react.dev/)
+*   **Build Tool:** [Vite](https://vitejs.dev/)
+*   **Language:** [TypeScript](https://www.typescriptlang.org/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **UI Library:** [Shadcn UI](https://ui.shadcn.com/)
+*   **State Management:**
+    *   [Zustand](https://github.com/pmndrs/zustand) (Client state)
+    *   [TanStack Query](https://tanstack.com/query/latest) (Server state)
+*   **Forms:** [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
+*   **Routing:** [React Router DOM](https://reactrouter.com/)
+*   **HTTP Client:** [Axios](https://axios-http.com/)
 
-## Expanding the ESLint configuration
+## ⚙️ Setup & Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
+*   Node.js 18+
+*   npm
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Navigate to the `banking-frontend` directory and install dependencies:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd banking-frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Environment Configuration
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the root of `banking-frontend` (or check if it exists) to define the API URL:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_URL=http://localhost:8080/api
+```
+
+### 3. Run Locally
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The app will be available at [http://localhost:5173](http://localhost:5173).
+
+## 🐳 Docker
+
+You can run the frontend as a standalone container (served via Nginx).
+
+### Build & Run
+```bash
+# Build the image
+docker build -t banking-frontend .
+
+# Run the container (Mapping port 5173 to container's 80)
+docker run -p 5173:80 banking-frontend
+```
+
+*Note: For the full stack experience (Frontend + Backend + DB), please use the `docker-compose.yml` in the project root.*
+
+## 📂 Project Structure
+
+```
+src/
+├── components/      # Reusable UI components (Layout, UI kit, Dialogs)
+├── lib/             # Utilities (API client, utils)
+├── pages/           # Page components (Login, Dashboard, Transfer, etc.)
+├── services/        # API service calls separation
+├── store/           # Global state (Zustand)
+├── types/           # TypeScript interfaces and Enum definitions
+├── App.tsx          # Main App component & Routing
+└── main.tsx         # Entry point
 ```
