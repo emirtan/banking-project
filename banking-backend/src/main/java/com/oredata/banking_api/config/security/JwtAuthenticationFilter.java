@@ -39,29 +39,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        jwt = authHeader.substring(7); // Skip "Bearer " part (7 chars)
-        userEmail = jwtService.extractUsername(jwt); // Extract username from Token
+        try {
+            jwt = authHeader.substring(7); // Skip "Bearer " part (7 chars)
+            userEmail = jwtService.extractUsername(jwt); // Extract username from Token
 
-        // If username exists but not authenticated in context yet
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // If username exists but not authenticated in context yet
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // Find user from DB
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                // Find user from DB
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            // Is Token valid?
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+                // Is Token valid?
+                if (jwtService.isTokenValid(jwt, userDetails)) {
 
-                // If valid, tell Spring Security "This user is verified, let them in"
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // If valid, tell Spring Security "This user is verified, let them in"
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Update Security Context
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    // Update Security Context
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+            filterChain.doFilter(request, response);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\": 401, \"message\": \"Token expired\"}");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\": 401, \"message\": \"Invalid token\"}");
         }
-        filterChain.doFilter(request, response);
     }
 }

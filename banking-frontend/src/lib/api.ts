@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { toast } from '@/components/ui/use-toast';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api', // Failover to localhost if env not set
@@ -36,10 +37,16 @@ api.interceptors.response.use(
     // If 401 (Unauthorized) or 403 (Forbidden) error comes
     if (error.response?.status === 401 || error.response?.status === 403) {
       console.error("Authorization Error: Token expired or invalid. Logging out.");
+
+      toast({
+        variant: "destructive",
+        title: "Session Expired",
+        description: "Your session has expired. Please log in again.",
+      });
+
       // Force user to logout automatically
       useAuthStore.getState().logout();
-      // Redirect to login page (optional: ProtectedRoute handles it when page refreshes)
-      // window.location.href = '/login'; 
+      // Redirect handled by ProtectedRoute
     }
     return Promise.reject(error);
   }
