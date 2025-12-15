@@ -1,0 +1,17 @@
+{
+  // Bu dosya diğer yapılandırma dosyalarına işaret ediyor (eski hali)
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  
+  // ANCAK: IDE'lerin ve Shadcn'in Alias'ı tanıması için 
+  // compilerOptions'ı buraya da eklememiz gerekiyor.
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
