@@ -20,6 +20,22 @@ const TransactionService = {
         const response = await api.get<TransactionResponse[]>(`/transactions/account/${accountId}`);
         return response.data;
     },
+
+    // POST /api/transactions/deposit?accountId=...&amount=...
+    deposit: async (accountId: string, amount: number): Promise<TransactionResponse> => {
+        const response = await api.post<TransactionResponse>(`/transactions/deposit`, null, {
+            params: { accountId, amount }
+        });
+        return response.data;
+    },
+
+    // POST /api/transactions/withdraw?accountId=...&amount=...
+    withdraw: async (accountId: string, amount: number): Promise<TransactionResponse> => {
+        const response = await api.post<TransactionResponse>(`/transactions/withdraw`, null, {
+            params: { accountId, amount }
+        });
+        return response.data;
+    },
 };
 
 export default TransactionService;

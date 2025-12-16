@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // Added Input
+import { BalanceOperationDialog } from '@/components/BalanceOperationDialog'; // Import added
 import { CreateAccountDialog } from '@/components/CreateAccountDialog';
 
 /* -------------------------------------------------------------------------- */
@@ -102,8 +103,10 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
 
         <Separator className="my-3" />
 
+        <BalanceOperationDialog accountId={account.id} currentBalance={account.balance} />
+
         <Link to={`/account/${account.id}`}>
-          <Button variant="ghost" size="sm" className="w-full justify-between">
+          <Button variant="ghost" size="sm" className="w-full justify-between mt-2">
             View Details
             <ChevronRight className="h-4 w-4" />
           </Button>

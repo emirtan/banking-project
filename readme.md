@@ -7,9 +7,9 @@ This is a full-stack **Mini Banking Application** consisting of a **Spring Boot*
 *   **User Management:** Secure Registration & Login with **JWT Authentication**.
 *   **Account Operations:**
     *   Create new accounts.
+    *   **Deposit & Withdraw:** Easily manage your balance with deposit and withdrawal options.
     *   Search for accounts.
     *   Edit account details.
-    *   Delete accounts.
     *   Delete accounts.
 *   **Money Transfer:**
     *   **Self-Transfer:** Move money between your own accounts.
@@ -18,6 +18,9 @@ This is a full-stack **Mini Banking Application** consisting of a **Spring Boot*
 *   **Transaction History:**
     *   View transactions per account.
     *   Consolidated Global History page for all transactions.
+*   **Robust Concurrency Handling:**
+    *   **Simultaneous Transactions:** Uses **Optimistic Locking** (`@Version`) to safely handle simultaneous deposit, withdrawal, and transfer requests without race conditions.
+    *   **Atomic Operations:** Ensures data integrity even under high load.
 *   **Security:**
     *   BCrypt password hashing.
     *   Stateless JWT authentication.
