@@ -44,7 +44,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = Account.builder()
                 .name(accountDto.getName())
                 .balance(accountDto.getBalance())
-                .number(UUID.randomUUID().toString())
+                .number(generateUniqueAccountNumber())
                 .user(user)
                 .build();
 
@@ -96,5 +96,15 @@ public class AccountServiceImpl implements AccountService {
         }
 
         return accountRepository.findByUserId(userId);
+    }
+
+    private String generateUniqueAccountNumber() {
+        String accountNumber;
+        do {
+            // Generate a random 10-digit number (e.g., 1000000000 to 9999999999)
+            long randomNum = (long) (Math.floor(Math.random() * 9_000_000_000L) + 1_000_000_000L);
+            accountNumber = String.valueOf(randomNum);
+        } while (accountRepository.existsByNumber(accountNumber)); // Ensure Uniqueness
+        return accountNumber;
     }
 }

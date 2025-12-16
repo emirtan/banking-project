@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -43,6 +45,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    // Handle Authentication Failure (401) - e.g., Wrong Password
+    @ExceptionHandler({ BadCredentialsException.class, AuthenticationException.class })
+    public ResponseEntity<Object> handleAuthenticationException(Exception ex) {
+        return buildErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED);
     }
 
     // Handle Insufficient Balance (400)

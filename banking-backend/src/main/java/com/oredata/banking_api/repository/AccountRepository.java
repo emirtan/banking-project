@@ -21,4 +21,10 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
     // 2. Find all accounts by User ID (For listing)
     List<Account> findByUserId(UUID userId);
+
+    // 3. Find by Account Number (For specific lookups / uniqueness check)
+    // Used for Transfer by Number and Unique Generation
+    java.util.Optional<Account> findByNumber(String number);
+
+    boolean existsByNumber(String number);
 }

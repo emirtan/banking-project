@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRightLeft, Loader2 } from 'lucide-react';
+import * as React from 'react';
 
 import AccountService from '@/services/accountService';
 import TransactionService from '@/services/transactionService';
@@ -39,8 +40,15 @@ const formatMoney = (amount: number) => {
 // --- Schema ---
 const TransferSchema = z.object({
     sourceAccountId: z.string().min(1, 'Source account must be selected.'),
-    targetAccountId: z.string().min(1, 'Target account must be selected.'),
+    targetAccountId: z.string().optional(),
+    targetAccountNumber: z.string().optional(),
     amount: z.coerce.number().min(0.01, 'Amount must be at least 0.01.'),
+}).refine((data) => {
+    // Either ID or Number must be present
+    return !!data.targetAccountId || !!data.targetAccountNumber;
+}, {
+    message: "You must select a target account.",
+    path: ["targetAccountId"],
 }).refine((data) => data.sourceAccountId !== data.targetAccountId, {
     message: "Source and target accounts cannot be the same.",
     path: ["targetAccountId"],
@@ -50,10 +58,13 @@ type TransferFormValues = z.infer<typeof TransferSchema>;
 
 export const TransferPage = () => {
     const { user } = useAuthStore.getState();
-    const userId = user?.id; // Has id after store update
+    const userId = user?.id;
     const navigate = useNavigate();
     const { toast } = useToast();
     const queryClient = useQueryClient();
+
+    // Transfer Type State
+    const [transferType, setTransferType] = React.useState<'INTERNAL' | 'EXTERNAL'>('INTERNAL');
 
     // 1. Fetch Accounts
     const { data: accounts, isLoading: isLoadingAccounts } = useQuery({
@@ -70,9 +81,16 @@ export const TransferPage = () => {
         defaultValues: {
             sourceAccountId: '',
             targetAccountId: '',
+            targetAccountNumber: '',
             amount: 0,
         },
     });
+
+    // Reset target fields when switching types
+    React.useEffect(() => {
+        form.setValue('targetAccountId', '');
+        form.setValue('targetAccountNumber', '');
+    }, [transferType, form]);
 
     // 3. Mutation (Transfer Operation)
     const transferMutation = useMutation({
@@ -82,7 +100,6 @@ export const TransferPage = () => {
                 title: 'Transfer Successful',
                 description: 'Money transfer completed successfully.',
             });
-            // Invalidate cache to update account balances
             queryClient.invalidateQueries({ queryKey: ['userAccounts'] });
             navigate('/dashboard');
         },
@@ -97,30 +114,30 @@ export const TransferPage = () => {
     });
 
     const onSubmit = (values: TransferFormValues) => {
-        // Extra Balance Check (for Client-Side UX)
         const sourceAccount = accounts?.find(a => a.id === values.sourceAccountId);
         if (sourceAccount && sourceAccount.balance < values.amount) {
             form.setError('amount', { message: 'Insufficient balance.' });
             return;
         }
 
-        transferMutation.mutate(values);
+        // Clean up payload based on type
+        const payload = { ...values };
+        if (transferType === 'INTERNAL') {
+            delete payload.targetAccountNumber;
+        } else {
+            delete payload.targetAccountId;
+        }
+
+        transferMutation.mutate(payload);
     };
 
     if (isLoadingAccounts) {
         return <div className="p-10 text-center"><Loader2 className="animate-spin w-8 h-8 mx-auto" /></div>;
     }
 
-    if (!accounts || accounts.length < 2) {
-        return (
-            <Card className="max-w-xl mx-auto mt-10">
-                <CardHeader>
-                    <CardTitle>Transfer Unavailable</CardTitle>
-                    <CardDescription>You need at least 2 accounts to make a transfer.</CardDescription>
-                </CardHeader>
-            </Card>
-        );
-    }
+    // Min accounts check only for INTERNAL transfer if we wanted to be strict,
+    // but users might want to send money out even with 1 account.
+    // So we remove the "return null if < 2 accounts" block or adapt it.
 
     return (
         <div className="max-w-xl mx-auto space-y-6">
@@ -131,11 +148,27 @@ export const TransferPage = () => {
                     <CardTitle className="flex items-center gap-2">
                         <ArrowRightLeft className="w-5 h-5" /> Wire / Transfer
                     </CardTitle>
-                    <CardDescription>
-                        Transfer money between your accounts.
-                    </CardDescription>
+                    <CardDescription> Send money to your own accounts or others. </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    {/* Transfer Type Tabs */}
+                    <div className="flex space-x-4 mb-6 border-b pb-4">
+                        <button
+                            type="button"
+                            onClick={() => setTransferType('INTERNAL')}
+                            className={`pb-2 text-sm font-medium transition-colors ${transferType === 'INTERNAL' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}
+                        >
+                            My Accounts
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setTransferType('EXTERNAL')}
+                            className={`pb-2 text-sm font-medium transition-colors ${transferType === 'EXTERNAL' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground'}`}
+                        >
+                            Another Account
+                        </button>
+                    </div>
+
                     {/* @ts-ignore */}
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6">
@@ -146,57 +179,73 @@ export const TransferPage = () => {
                                 name="sourceAccountId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Source Account</FormLabel>
+                                        <FormLabel>From (Source)</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select Account" />
+                                                    <SelectValue placeholder="Select Source Account" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {accounts.map(acc => (
+                                                {accounts?.map(acc => (
                                                     <SelectItem key={acc.id} value={acc.id}>
                                                         {acc.accountName} - {formatMoney(acc.balance)}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <FormDescription>
-                                            The account money will be withdrawn from.
-                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* Target Account */}
-                            <FormField
-                                control={form.control as any}
-                                name="targetAccountId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Target Account</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            {/* Target Account (INTERNAL) */}
+                            {transferType === 'INTERNAL' && (
+                                <FormField
+                                    control={form.control as any}
+                                    name="targetAccountId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>To (My Account)</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select Target Account" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {accounts?.filter(a => a.id !== form.watch('sourceAccountId')).map(acc => (
+                                                        <SelectItem key={acc.id} value={acc.id}>
+                                                            {acc.accountName} ({acc.accountNumber})
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+
+                            {/* Target Account (EXTERNAL) */}
+                            {transferType === 'EXTERNAL' && (
+                                <FormField
+                                    control={form.control as any}
+                                    name="targetAccountNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>To (Account Number)</FormLabel>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select Account" />
-                                                </SelectTrigger>
+                                                <Input placeholder="e.g. 1928374650" {...field} />
                                             </FormControl>
-                                            <SelectContent>
-                                                {accounts.map(acc => (
-                                                    <SelectItem key={acc.id} value={acc.id}>
-                                                        {acc.accountName} ({acc.accountNumber})
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormDescription>
-                                            The account money will be deposited to.
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                            <FormDescription>
+                                                Enter the 10-digit account number of the recipient.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
 
                             {/* Amount */}
                             <FormField

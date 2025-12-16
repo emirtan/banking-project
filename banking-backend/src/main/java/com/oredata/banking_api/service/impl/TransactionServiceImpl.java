@@ -33,8 +33,18 @@ public class TransactionServiceImpl implements TransactionService {
         Account fromAccount = accountRepository.findById(transactionDto.getSourceAccountId())
                 .orElseThrow(() -> new ResourceNotFoundException("Sender account not found"));
 
-        Account toAccount = accountRepository.findById(transactionDto.getTargetAccountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Receiver account not found"));
+        Account toAccount;
+
+        // RESOLVE TARGET ACCOUNT
+        if (transactionDto.getTargetAccountId() != null) {
+            toAccount = accountRepository.findById(transactionDto.getTargetAccountId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Receiver account not found with ID"));
+        } else if (transactionDto.getTargetAccountNumber() != null) {
+            toAccount = accountRepository.findByNumber(transactionDto.getTargetAccountNumber())
+                    .orElseThrow(() -> new ResourceNotFoundException("Receiver account not found with Number"));
+        } else {
+            throw new IllegalArgumentException("Target Account ID or Number must be provided");
+        }
 
         // 2. Is Balance Sufficient?
         if (fromAccount.getBalance().compareTo(transactionDto.getAmount()) < 0) {

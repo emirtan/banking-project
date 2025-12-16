@@ -1,5 +1,12 @@
 import api from '@/lib/api';
-import { TransactionResponse, TransferRequest } from '@/types/transaction';
+import { TransactionResponse } from '@/types/transaction';
+
+export interface TransferRequest {
+    sourceAccountId: string;
+    targetAccountId?: string;
+    targetAccountNumber?: string;
+    amount: number;
+}
 
 const TransactionService = {
     // POST /api/transactions/transfer

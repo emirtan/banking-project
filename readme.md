@@ -10,7 +10,11 @@ This is a full-stack **Mini Banking Application** consisting of a **Spring Boot*
     *   Search for accounts.
     *   Edit account details.
     *   Delete accounts.
-*   **Money Transfer:** Secure and validation-backed money transfer between accounts.
+    *   Delete accounts.
+*   **Money Transfer:**
+    *   **Self-Transfer:** Move money between your own accounts.
+    *   **P2P Transfer:** Send money to other users using their unique **10-digit Account Number**.
+*   **Account Numbers:** System automatically generates realistic, 10-digit unique account numbers (e.g., `1234567890`) for every new account.
 *   **Transaction History:**
     *   View transactions per account.
     *   Consolidated Global History page for all transactions.
@@ -96,7 +100,9 @@ The Frontend Application will be available at: `http://localhost:5173` (or the p
 1.  **Register:** Create a new user account on the Register page.
 2.  **Login:** Log in with your new credentials.
 3.  **Create Account:** Go to "My Accounts" and click "Create Account" to open a bank account.
-4.  **Transfer:** Use the "Money Transfer" page to send money between accounts.
+4.  **Transfer:** Use the "Money Transfer" page to send money.
+    *   Select **"My Accounts"** to transfer between your own accounts.
+    *   Select **"Another Account"** to send money to someone else by entering their **Account Number**.
 5.  **History:** Check "Transaction History" to see your past activity.
 
 ## 🐳 Easy Setup with Docker
