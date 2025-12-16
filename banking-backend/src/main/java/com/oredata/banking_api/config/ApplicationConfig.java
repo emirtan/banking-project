@@ -30,9 +30,8 @@ public class ApplicationConfig {
         // CHANGE HERE:
         // Using userDetailsService() inside parenthesis instead of new
         // DaoAuthenticationProvider()
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
-
-        // Continue setting the password encoder
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
